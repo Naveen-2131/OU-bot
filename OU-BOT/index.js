@@ -1,15 +1,7 @@
 require('dotenv').config();
 const DerivAPI = require('./lib/api');
 const DerivBot = require('./lib/bot');
-const SimpleTickStrategy = require('./strategies/simple-tick');
-const DigitStrategy = require('./strategies/digit-strategy');
-const StatsStrategy = require('./strategies/stats-strategy');
 const OverUnderStrategy = require('./strategies/over-under-strategy');
-const OddEvenStrategy = require('./strategies/odd-even-strategy');
-const MatchesDiffersStrategy = require('./strategies/matches-differs-strategy');
-const DigitRotationStrategy = require('./strategies/digit-rotation-strategy');
-const MatchesStrategy = require('./strategies/matches-strategy');
-const SafeProfitStrategy = require('./strategies/safe-profit-strategy');
 
 const APP_ID = process.env.DERIV_APP_ID;
 const TOKEN = process.env.DERIV_API_TOKEN;
