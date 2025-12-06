@@ -123,16 +123,16 @@ class OverUnderStrategy {
 
         if (this.waitingForExit) return;
 
-        // Strategy Logic: Over 4 / Under 5
+        // Strategy Logic: Under 5 / Over 4 (Reversed)
         let contractType = null;
         let prediction = null;
 
         if (currentDigit < 5) {
-            contractType = 'DIGITOVER';
-            prediction = 4;
-        } else {
             contractType = 'DIGITUNDER';
             prediction = 5;
+        } else {
+            contractType = 'DIGITOVER';
+            prediction = 4;
         }
 
         // Execute Trade
