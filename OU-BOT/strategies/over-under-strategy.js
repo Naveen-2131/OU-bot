@@ -7,12 +7,13 @@ class OverUnderStrategy {
 
         // Limits
         this.tradeCount = 0;
-        this.maxTrades = 100;
+        this.maxTrades = 9999999; // Unlimited trades
 
-        // Strategy Parameters
+        // Strategy Parameters - Unlimited Martingale
         this.baseStake = 0.35;
         this.stake = this.baseStake;
-        this.martingaleMultiplier = 2.5; // Aggressive recovery
+        this.martingaleMultiplier = 2.0; // Aggressive recovery
+        this.martingaleLevel = 0;
 
         this.duration = 1;
         this.durationUnit = 't'; // ticks
@@ -22,7 +23,7 @@ class OverUnderStrategy {
         this.waitingForExit = false;
 
         // Rate Limiting
-        this.minInterval = 2000; // Increased interval to allow result checking
+        this.minInterval = 2000;
         this.lastTradeTime = 0;
 
         // Setup console input
@@ -36,10 +37,12 @@ class OverUnderStrategy {
             if (command === 'start') {
                 if (!this.isRunning) {
                     this.isRunning = true;
-                    console.log('>>> OVER/UNDER MARTINGALE STRATEGY <<<');
+                    console.log('>>> UNLIMITED MARTINGALE STRATEGY <<<');
                     console.log(`Base Stake: ${this.baseStake}, Multiplier: x${this.martingaleMultiplier}`);
+                    console.log('⚠️  WARNING: No cap - will trade until balance = 0 or WIN');
                     this.tradeCount = 0;
                     this.stake = this.baseStake;
+                    this.martingaleLevel = 0;
                     this.lastContractId = null;
                     this.waitingForExit = false;
                 }
@@ -54,7 +57,15 @@ class OverUnderStrategy {
 
     onStart(bot) {
         this.bot = bot;
-        console.log('Over/Under Strategy Loaded (Martingale Active). Type "start" to begin.');
+        console.log('Over/Under Strategy Loaded (Unlimited Martingale). Type "start" to begin.');
+
+        // Auto-start for cloud deployment
+        if (process.env.AUTO_START === 'true') {
+            this.isRunning = true;
+            console.log('>>> AUTO-STARTED (Cloud Mode) <<<');
+            console.log(`Base Stake: ${this.baseStake}, Multiplier: x${this.martingaleMultiplier}`);
+            console.log('⚠️  WARNING: Unlimited Martingale - No cap!');
+        }
     }
 
     async onTick(tick) {
@@ -64,25 +75,40 @@ class OverUnderStrategy {
 
         // 1. Check Previous Trade if exists
         if (this.lastContractId) {
-            // If we are waiting for a result, don't trade yet
             if (this.waitingForExit) {
                 const contract = await this.bot.checkContract(this.lastContractId);
                 if (contract && contract.is_sold) {
-                    console.log(`Contract ${this.lastContractId} Closed. Profit: ${contract.profit}`);
+                    const profit = parseFloat(contract.profit);
+                    console.log(`Contract ${this.lastContractId} Closed. Profit: $${profit}`);
 
-                    if (contract.profit > 0) {
-                        console.log(`WIN! Resetting Stake to ${this.baseStake}`);
+                    if (profit > 0) {
+                        // WIN - Reset everything
+                        console.log(`✅ WIN! Level ${this.martingaleLevel} recovered. Resetting to base stake.`);
                         this.stake = this.baseStake;
+                        this.martingaleLevel = 0;
                     } else {
+                        // LOSS - Increase stake (NO CAP)
+                        this.martingaleLevel++;
                         this.stake = parseFloat((this.stake * this.martingaleMultiplier).toFixed(2));
-                        console.log(`LOSS. Martingale: Increasing Stake to ${this.stake}`);
+                        console.log(`❌ LOSS. Martingale Level ${this.martingaleLevel}: Next Stake = $${this.stake}`);
+
+                        // Check if we have enough balance
+                        if (this.bot.balance && this.stake > this.bot.balance) {
+                            console.log(`⚠️  WARNING: Stake ($${this.stake}) > Balance ($${this.bot.balance})`);
+                            console.log('Adjusting stake to remaining balance...');
+                            this.stake = parseFloat(this.bot.balance.toFixed(2));
+                            if (this.stake < 0.35) {
+                                console.log('❌ INSUFFICIENT BALANCE - STOPPING');
+                                this.isRunning = false;
+                                return;
+                            }
+                        }
                     }
 
                     this.lastContractId = null;
                     this.waitingForExit = false;
-                    this.lastTradeTime = now; // Add delay after result
+                    this.lastTradeTime = now;
                 } else {
-                    // Still running, wait
                     return;
                 }
             }
@@ -91,39 +117,37 @@ class OverUnderStrategy {
         const currentDigit = parseInt(tick.quote.toString().slice(-1));
         console.log(`Tick: ${tick.quote} (Last Digit: ${currentDigit})`);
 
-        // Check Rate Limit (after result check)
         if (now - this.lastTradeTime < this.minInterval) {
             return;
         }
 
-        if (this.waitingForExit) return; // Double check
+        if (this.waitingForExit) return;
 
-        // Strategy Logic: Mean Reversion
+        // Strategy Logic: Over 4 / Under 5
         let contractType = null;
         let prediction = null;
 
         if (currentDigit < 5) {
-            // Saw Low, Betting High
             contractType = 'DIGITOVER';
             prediction = 4;
         } else {
-            // Saw High, Betting Low
             contractType = 'DIGITUNDER';
             prediction = 5;
         }
 
         // Execute Trade
         if (contractType) {
-            console.log(`Trigger: Last ${currentDigit}. Buying ${contractType} ${prediction} at $${this.stake}...`);
+            console.log(`Trigger: Last ${currentDigit}. Buying ${contractType} ${prediction} at $${this.stake}... [Level ${this.martingaleLevel}]`);
             this.tradeCount++;
-            this.waitingForExit = true; // Block new trades
+            this.waitingForExit = true;
 
             try {
                 const trade = await this.bot.buy(contractType, this.stake, this.duration, this.durationUnit, prediction);
                 if (trade && trade.contract_id) {
                     this.lastContractId = trade.contract_id;
+                    console.log(`Trade #${this.tradeCount} Executed! ID: ${trade.contract_id}`);
                 } else {
-                    this.waitingForExit = false; // Failed
+                    this.waitingForExit = false;
                 }
             } catch (e) {
                 console.error('Buy Failed:', e);
