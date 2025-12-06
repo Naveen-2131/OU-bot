@@ -21,27 +21,25 @@ if (!TOKEN || TOKEN === 'YOUR_API_TOKEN_HERE') {
 
 const api = new DerivAPI(APP_ID);
 const strategy = new OverUnderStrategy();
-// const strategy = new MatchesDiffersStrategy();
-// const strategy = new DigitRotationStrategy();
-// const strategy = new MatchesStrategy();
-// const strategy = new SafeProfitStrategy();
 const bot = new DerivBot(api, strategy);
 
-// HTTP server for Render Web Service
+// HTTP server for Render Web Service - START IMMEDIATELY
 const http = require('http');
 const PORT = process.env.PORT || 3000;
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Deriv Trading Bot is running!\n');
 });
-server.listen(PORT, () => {
-    console.log(`HTTP server listening on port ${PORT}`);
+
+// Start HTTP server immediately
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ HTTP server listening on port ${PORT}`);
 });
 
+// Start trading bot
 (async () => {
     try {
         await bot.init(TOKEN);
-        // Start trading on Volatility 100 Index
         await bot.startTrading('R_100');
     } catch (error) {
         console.error('Fatal Error:', error);
