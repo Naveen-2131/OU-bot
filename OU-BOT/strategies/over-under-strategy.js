@@ -12,7 +12,7 @@ class OverUnderStrategy {
         // Strategy Parameters - Unlimited Martingale
         this.baseStake = 0.35;
         this.stake = this.baseStake;
-        this.martingaleMultiplier = 2.0; // Aggressive recovery
+        this.martingaleMultiplier = 1.5; // Aggressive recovery
         this.martingaleLevel = 0;
 
         this.duration = 1;
@@ -129,7 +129,7 @@ class OverUnderStrategy {
 
         if (currentDigit < 5) {
             contractType = 'DIGITUNDER';
-            prediction = 4;
+            prediction = 3;
         } else {
             contractType = 'DIGITOVER';
             prediction = 6;
@@ -158,5 +158,6 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
 
 
