@@ -127,7 +127,7 @@ class OverUnderStrategy {
         let contractType = null;
         let prediction = null;
 
-        if (currentDigit > 5) {
+        if (currentDigit < 5) {
             contractType = 'DIGITUNDER';
             prediction = 4;
         } else {
@@ -158,6 +158,7 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
 
 
 
