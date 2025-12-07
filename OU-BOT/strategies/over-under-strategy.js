@@ -129,10 +129,10 @@ class OverUnderStrategy {
 
         if (currentDigit > 5) {
             contractType = 'DIGITUNDER';
-            prediction = 4;
+            prediction = 3;
         } else {
             contractType = 'DIGITOVER';
-            prediction = 5;
+            prediction = 6;
         }
 
         // Execute Trade
@@ -158,6 +158,7 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
 
 
 
