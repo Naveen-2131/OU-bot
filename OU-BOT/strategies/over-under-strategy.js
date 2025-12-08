@@ -128,11 +128,11 @@ class OverUnderStrategy {
         let prediction = null;
 
         if (currentDigit < 5) {
-            contractType = 'DIGITOVER';
-            prediction = 6;
-        } else {
             contractType = 'DIGITUNDER';
             prediction = 3;
+        } else {
+            contractType = 'DIGITOVER';
+            prediction = 7;
         }
 
         // Execute Trade
@@ -158,6 +158,7 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
 
 
 
