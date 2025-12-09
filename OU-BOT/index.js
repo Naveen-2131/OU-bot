@@ -1,7 +1,7 @@
 require('dotenv').config();
 const DerivAPI = require('./lib/api');
 const DerivBot = require('./lib/bot');
-const OverUnderStrategy = require('./strategies/over-under-strategy');
+const OverUnderStrategy = require('./strategies/ou-timing');
 
 const APP_ID = process.env.DERIV_APP_ID;
 const TOKEN = process.env.DERIV_API_TOKEN;
