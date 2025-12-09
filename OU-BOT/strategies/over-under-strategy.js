@@ -29,7 +29,7 @@ class OverUnderStrategy {
 
         // Profit/Loss Tracking & Cooldown
         this.sessionProfit = 0;
-        this.takeProfit = 1; // $10 profit target
+        this.takeProfit = 0.50; // $10 profit target
         this.stopLoss = -20; // $10 loss limit
         this.isInCooldown = false;
         this.cooldownDuration = 60000; // 1 minute in milliseconds
@@ -239,3 +239,4 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
