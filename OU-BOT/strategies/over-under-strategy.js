@@ -202,17 +202,18 @@ class OverUnderStrategy {
         let contractType = null;
         let prediction = null;
         let phaseName = "";
-
-        if (isPhaseUnder) {  // Run "5 Over" Logic
+        
+ if (isPhaseUnder) {  // Run "5 Over" Logic
             phaseName = "OVER 0";
             contractType = 'DIGITOVER';
             prediction = 0;
         } else {
             // Run "4 Under" Logic
-            phaseName = "DIGITUNDER 9";
-            contractType = 'DIGITUNDER';
-            prediction = 9;
+            phaseName = "DIGITOVER 0";
+            contractType = 'DIGITOVER';
+            prediction = 0;
         }
+
 
         console.log(`Tick: ${tick.quote} (L: ${currentDigit}) | [Phase: ${phaseName}]`);
 
@@ -239,4 +240,5 @@ class OverUnderStrategy {
 }
 
 module.exports = OverUnderStrategy;
+
 
